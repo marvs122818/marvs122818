@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="tl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pro Investment Hub</title>
+    <!-- Chart.js para sa Propesyonal na Graph -->
+    <script src="https://jsdelivr.net"></script>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --primary: #10b981;
+            --primary-hover: #059669;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+        }
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 15px;
+        }
+        .app-container {
+            max-width: 480px;
+            margin: auto;
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+        .header h1 {
+            font-size: 24px;
+            margin: 0;
+            color: var(--primary);
+        }
+        .header p {
+            color: var(--text-muted);
+            margin: 5px 0 0 0;
+            font-size: 14px;
+        }
+        .input-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 14px;
+            color: var(--text-muted);
+        }
+        .input-wrapper {
+            position: relative;
+        }
+        .input-wrapper span {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+        }
+        input {
+            width: 100%;
+            padding: 12px 12px 12px 30px;
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 10px;
+            color: white;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        input:focus {
+            border-color: var(--primary);
+            outline: none;
+        }
+        button {
+            width: 100%;
+            padding: 14px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: background 0.2s;
+        }
+        button:hover {
+            background: var(--primary-hover);
+        }
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 25px;
+            display: none;
+        }
+        .stat-card {
+            background: #0f172a;
+            padding: 15px;
+            border-radius: 12px;
+            border-left: 4px solid var(--primary);
+        }
+        .stat-card.full {
+            grid-column: span 2;
+            border-left-color: #3b82f6;
+        }
+        .stat-card p {
+            margin: 0;
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+        .stat-card h3 {
+            margin: 5px 0 0 0;
+            font-size: 18px;
+        }
+        .chart-container {
+            margin-top: 25px;
+            background: #0f172a;
+            padding: 15px;
+            border-radius: 12px;
+            display: none;
+        }
+        .table-container {
+            margin-top: 25px;
+            overflow-x: auto;
+            display: none;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+            text-align: left;
+        }
+        th, td {
+            padding: 10px;
+            border-bottom: 1px solid #334155;
+        }
+        th {
+            color: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <div class="header">
+        <h1>🚀 SmartInvest Pro</h1>
+        <p>Advanced Wealth Growth Simulator</p>
+    </div>
+
+    <div class="input-group">
+        <label>Simulang Puhunan (Principal)</label>
+        <div class="input-wrapper">
+            <span>₱</span>
+            <input type="number" id="principal" value="50000">
+        </div>
+    </div>
+
+    <div class="input-group">
+        <label>Buwanang Dagdag (Monthly Contribution)</label>
+        <div class="input-wrapper">
+            <span>₱</span>
+            <input type="number" id="monthly" value="2000">
+        </div>
+    </div>
+
+    <div class="input-group">
+        <label>Inaasahang Interes Kada Taon (%)</label>
+        <div class="input-wrapper">
+            <span>%</span>
+            <input type="number" id="rate" value="10">
+        </div>
+    </div>
+
+    <div class="input-group">
+        <label>Tagal ng Pamumuhunan (Taon)</label>
+        <div class="input-wrapper">
+            <span>📅</span>
+            <input type="number" id="years" value="10">
+        </div>
+    </div>
+
+    <button onclick="runSimulation()">Simulan ang Pagkalkula</button>
+
+    <!-- Dashboard Results -->
+    <div class="dashboard-grid" id="dashGrid">
+        <div class="stat-card">
+            <p>Total na Hulog</p>
+            <h3 id="resTotalInvest">₱0.00</h3>
+        </div>
+        <div class="stat-card">
+            <p>Total na Kinita</p>
+            <h3 id="resTotalInterest" style="color: var(--primary);">₱0.00</h3>
+        </div>
+        <div class="stat-card full">
+            <p>Kabuuang Halaga (Future Value)</p>
+            <h3 id="resFutureValue" style="color: #3b82f6; font-size: 22px;">₱0.00</h3>
+        </div>
+    </div>
+
+    <!-- Live Graph -->
+    <div class="chart-container" id="chartBox">
+        <canvas id="growthChart"></canvas>
+    </div>
+
+    <!-- Breakdown Table -->
+    <div class="table-container" id="tableBox">
+        <table>
+            <thead>
+                <tr>
+                    <th>Taon</th>
+                    <th>Total Hulog</th>
+                    <th>Kita (Interest)</th>
+                    <th>Halaga</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody"></tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+let currentChart = null;
+
+function runSimulation() {
+    const P = parseFloat(document.getElementById('principal').value) || 0;
+    const PMT = parseFloat(document.getElementById('monthly').value) || 0;
+    const annualRate = parseFloat(document.getElementById('rate').value) || 0;
+    const years = parseInt(document.getElementById('years').value) || 0;
+
+    if(years <= 0) {
+        alert("Ilagay ang tamang bilang ng taon.");
+        return;
+    }
+
+    const r = (annualRate / 100) / 12; // Monthly rate
+    let totalValue = P;
+    let totalInvested = P;
+
+    const labels = [];
+    const dataGrowth = [];
+    const dataInvested = [];
+    let tableHTML = '';
+
+    for (let y = 1; y <= years; y++) {
+        for (let m = 1; m <= 12; m++) {
+            totalValue = (totalValue + PMT) * (1 + r);
+            totalInvested += PMT;
+        }
+
+        labels.push("Yr " + y);
+        dataGrowth.push(Math.round(totalValue));
+        dataInvested.push(Math.round(totalInvested));
+
+        let yearlyInterest = totalValue - totalInvested;
+
+        tableHTML += `<tr>
+            <td>Taon ${y}</td>
+            <td>₱${Math.round(totalInvested).toLocaleString()}</td>
+            <td>₱${Math.round(yearlyInterest).toLocaleString()}</td>
+            <td style="color: #10b981; font-weight: bold;">₱${Math.round(totalValue).toLocaleString()}</td>
+        </tr>`;
+    }
+
+    // Display Results
+    document.getElementById('resTotalInvest').innerText = "₱" + Math.round(totalInvested).toLocaleString();
+    document.getElementById('resTotalInterest').innerText = "₱" + Math.round(totalValue - totalInvested).toLocaleString();
+    document.getElementById('resFutureValue').innerText = "₱" + Math.round(totalValue).toLocaleString();
+
+    document.getElementById('tableBody').innerHTML = tableHTML;
+
+    // Show Elements
+    document.getElementById('dashGrid').style.display = 'grid';
+    document.getElementById('chartBox').style.display = 'block';
+    document.getElementById('tableBox').style.display = 'block';
+
+    // Update Chart
+    if (currentChart) currentChart.destroy();
+    
+    const ctx = document.getElementById('growthChart').getContext('2d');
+    currentChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [
+                { label: 'Kabuuang Halaga', data: dataGrowth, borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.1)', fill: true, tension: 0.3 },
+                { label: 'Kabuuang Hulog', data: dataInvested, borderColor: '#94a3b8', borderDash:, fill: false }
+            ]
+        },
+        options: {
+            responsive: true,
+            plugins: { legend: { labels: { color: '#f8fafc' } } },
+            scales: {
+                x: { ticks: { color: '#94a3b8' }, grid: { color: '#334155' } },
+                y: { ticks: { color: '#94a3b8' }, grid: { color: '#334155' } }
+            }
+        }
+    });
+}
+</script>
+
+</body>
+</html>
